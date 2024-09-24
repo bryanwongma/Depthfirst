@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Case Viewer</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            padding: 0;
+            margin: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        /* Filter Zone (30% height of the container) */
+        .filter-container {
+            flex: 0 0 30%;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+            overflow-y: auto;
+        }
+
+        .filter-container label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .filter-container input,
+        .filter-container select {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 1px;
+        }
+
+        .filter-container .filter-field {
+            flex: 1;
+            min-width: 45%;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            width: 100%;
+        }
+
+        .button-container button {
+            padding: 8px 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 30%;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        /* Middle section for item list (60% height of the container) */
+        .item-list-container {
+            flex: 0 0 60%;
+            overflow-y: auto;
+        }
+
+        /* Table Design */
+        .table-container {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-container th,
+        .table-container td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .table-container th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .table-container tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        /* Card Design */
+        .card-container {
+            display: none;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-around;
+        }
+
+        .card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            width: 100%;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Create Event Button */
+        .create-event-btn {
+            position: fixed;
+            bottom: 10%;
+            right: 50%;
+            transform: translateX(50%);
+            background-color: #007bff;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: background-color 0.3s ease;
+        }
+
+        .create-event-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* Media Queries */
+        @media (max-width: 768px) {
+            .table-container {
+                display: none;
+            }
+
+            .card-container {
+                display: flex;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .card-container {
+                display: none;
+            }
+
+            .table-container {
+                display: table;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Event Case Viewer</h1>
+
+        <!-- Filter section -->
+        <div class="filter-container">
+            <div class="filter-field">
+                <label for="disaster-type">ประเภทภัยพิบัติ:</label>
+                <input type="text" id="disaster-type" placeholder="Filter by disaster type">
+            </div>
+
+            <div class="filter-field">
+                <label for="event-name">ชื่อสถานการณ์:</label>
+                <input type="text" id="event-name" placeholder="Filter by event name">
+            </div>
+
+            <div class="filter-field">
+                <label for="event-id">รหัสสถานการณ์:</label>
+                <input type="text" id="event-id" placeholder="Filter by event ID">
+            </div>
+
+            <div class="filter-field">
+                <label for="status">สถานะภัย:</label>
+                <select id="status">
+                    <option value="">Select status</option>
+                    <option value="0">จบสถานะการณ์</option>
+                    <option value="1">ยังไม่จบจบสถานะการณ์</option>
+                </select>
+            </div>
+
+            <div class="filter-field">
+                <label for="start-date">วันที่เกิดสถานการณ์:</label>
+                <input type="date" id="start-date">
+            </div>
+
+            <div class="filter-field">
+                <label for="end-date">ถึงวันที่:</label>
+                <input type="date" id="end-date">
+            </div>
+
+            <div class="button-container">
+                <button id="search-btn">Search</button>
+                <button id="display-all-btn">Display All</button>
+                <button id="clear-filter-btn">Clear Filter</button>
+            </div>
+        </div>
+
+        <!-- Item list section -->
+        <div class="item-list-container">
+            <table class="table-container">
+                <thead>
+                    <tr>
+                        <th>ปี พ.ศ</th>
+                        <th>รหัสสถานการณ์</th>
+                        <th>ชื่อสถานการณ์</th>
+                        <th>วันที่เกิดสถานการณ์</th>
+                        <th>สถานะภัย</th>
+                        <th>More Info</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                </tbody>
+            </table>
+
+            <!-- Card section for mobile -->
+            <div class="card-container" id="card-container"></div>
+        </div>
+    </div>
+
+    <!-- Floating Create Event Button -->
+    <button class="create-event-btn" onclick="window.location.href='https://bryanwongma.github.io/Depthfirst/event_create.html'">
+        Create Event
+    </button>
+
+    <script>
+        // Sample event data
+        const events = [
+            {
+                year: '2567',
+                eventId: '1001',
+                name: 'ปี 2567 ภัยหนาว',
+                date: '01/01/2567',
+                status: 'จบสถานะการณ์',
+                statusColor: 'green',
+                statusValue: '0'
+            },
+            {
+                year: '2567',
+                eventId: '1002',
+                name: 'ปี 2567 แผ่นดินไหว',
+                date: '01/01/2567',
+                status: 'ยังไม่จบจบสถานะการณ์',
+                statusColor: 'red',
+                statusValue: '1'
+            },
+            {
+                year: '2567',
+                eventId: '1003',
+                name: 'ปี 2567 ไฟป่า',
+                date: '01/01/2567',
+                status: 'ยังไม่จบจบสถานะการณ์',
+                statusColor: 'red',
+                statusValue: '1'
+            }
+        ];
+
+        const cardContainer = document.getElementById('card-container');
+        const tableBody = document.getElementById('table-body');
+
+        function createCard(event) {
+            const card = document.createElement('div');
+            card.classList.add('card');
+            card.setAttribute('data-id', event.eventId);
+            
+            card.innerHTML = `
+                <h3>${event.name} (${event.year})</h3>
+                <p><strong>รหัสสถานการณ์:</strong> ${event.eventId}</p>
+                <p><strong>วันที่เกิดสถานการณ์:</strong> ${event.date}</p>
+                <p><strong>สถานะภัย:</strong> <span style="color:${event.statusColor};">${event.status}</span></p>
+                <div class="button-container">
+                    <button class="icon">🔍</button>
+                    <button class="edit">Edit</button>
+                    <button class="delete">Delete</button>
+                </div>
+
+                <!-- Hidden form to expand under the card for editing -->
+                <div class="form-container" style="display:none;">
+                    <form id="edit-event-form-${event.eventId}">
+                        <label>ปี พ.ศ. (Year):</label>
+                        <input type="number" id="year-${event.eventId}" value="${event.year}" required>
+
+                        <label>ชื่อสถานการณ์ (Event Name):</label>
+                        <input type="text" id="event-name-${event.eventId}" value="${event.name}" required>
+
+                        <label>รายละเอียดสถานการณ์ (Event Details):</label>
+                        <input type="text" id="event-details-${event.eventId}" value="test test" required>
+
+                        <label>สถานะภัย (Disaster Status):</label>
+                        <select id="status-${event.eventId}">
+                            <option value="0" ${event.statusValue === '0' ? 'selected' : ''}>จบสถานะการณ์</option>
+                            <option value="1" ${event.statusValue === '1' ? 'selected' : ''}>ยังไม่จบจบสถานะการณ์</option>
+                        </select>
+
+                        <label>สถานะการใช้งาน (Status of Use):</label>
+                        <select id="status-use-${event.eventId}">
+                            <option value="active">ใช้งาน</option>
+                            <option value="inactive">ไม่ใช้งาน</option>
+                        </select>
+
+                        <label>วันที่เกิดสถานการณ์ (Start Date):</label>
+                        <input type="date" id="start-date-${event.eventId}" value="2024-09-24" required>
+
+                        <label>ถึงวันที่ (End Date):</label>
+                        <input type="date" id="end-date-${event.eventId}" value="2024-09-24" required>
+
+                        <label>ประเภทภัย (Disaster Type):</label><br>
+                        <input type="checkbox" id="disaster-flood-${event.eventId}"> อุทกภัย
+                        <input type="checkbox" id="disaster-drought-${event.eventId}"> ภัยแล้ง<br>
+
+                        <label>ประเภทภัยอื่น ๆ (Other Disaster Types):</label><br>
+                        <input type="checkbox" id="other-fire-${event.eventId}"> ไฟป่า
+                        <input type="checkbox" id="other-road-${event.eventId}"> อุบัติภัยจากการจราจรทางราง(บก)<br>
+
+                        <div class="form-actions">
+                            <button type="button" class="cancel" data-id="${event.eventId}">Cancel</button>
+                            <button type="submit" class="save" data-id="${event.eventId}">Save</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function createTableRow(event) {
+            const row = document.createElement('tr');
+            row.setAttribute('data-id', event.eventId);
+            
+            row.innerHTML = `
+                <td>${event.year}</td>
+                <td>${event.eventId}</td>
+                <td>${event.name}</td>
+                <td>${event.date}</td>
+                <td style="color:${event.statusColor};">${event.status}</td>
+                <td><button class="icon">🔍</button></td>
+                <td><button class="edit">Edit</button></td>
+                <td><button class="delete">Delete</button></td>
+            `;
+
+            return row;
+        }
+
+        function displayEvents(eventsToDisplay) {
+            cardContainer.innerHTML = ''; // Clear current cards
+            tableBody.innerHTML = ''; // Clear current table rows
+
+            eventsToDisplay.forEach(event => {
+                const card = createCard(event);
+                cardContainer.appendChild(card);
+
+                const row = createTableRow(event);
+                tableBody.appendChild(row);
+            });
+
+            // Add click event for edit buttons (for cards and table)
+            document.querySelectorAll('.edit').forEach(button => {
+                button.addEventListener('click', function () {
+                    const eventId = this.closest('[data-id]').getAttribute('data-id');
+                    toggleEditForm(eventId);
+                });
+            });
+
+            // Add click event for cancel buttons
+            document.querySelectorAll('.cancel').forEach(button => {
+                button.addEventListener('click', function () {
+                    const eventId = this.getAttribute('data-id');
+                    toggleEditForm(eventId);
+                });
+            });
+
+            // Add save event
+            document.querySelectorAll('.save').forEach(button => {
+                button.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const eventId = this.getAttribute('data-id');
+                    saveEvent(eventId);
+                });
+            });
+        }
+
+        function toggleEditForm(eventId) {
+            const form = document.querySelector(`[data-id="${eventId}"] .form-container`);
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function saveEvent(eventId) {
+            const year = document.getElementById(`year-${eventId}`).value;
+            const name = document.getElementById(`event-name-${eventId}`).value;
+            const details = document.getElementById(`event-details-${eventId}`).value;
+            const status = document.getElementById(`status-${eventId}`).value;
+            const startDate = document.getElementById(`start-date-${eventId}`).value;
+            const endDate = document.getElementById(`end-date-${eventId}`).value;
+
+            // Update the event data (just for display purposes)
+            const eventIndex = events.findIndex(event => event.eventId === eventId);
+            events[eventIndex].year = year;
+            events[eventIndex].name = name;
+            events[eventIndex].details = details;
+            events[eventIndex].statusValue = status;
+            events[eventIndex].date = startDate;
+
+            // Hide the form after saving
+            toggleEditForm(eventId);
+            alert('Changes saved!');
+
+            // Redisplay the updated event data (you can improve by updating just the modified card or row)
+            displayEvents(events);
+        }
+
+        // Filter logic
+        function filterEvents() {
+            const disasterType = document.getElementById('disaster-type').value.toLowerCase();
+            const eventName = document.getElementById('event-name').value.toLowerCase();
+            const eventId = document.getElementById('event-id').value;
+            const status = document.getElementById('status').value;
+
+            const filteredEvents = events.filter(event => {
+                return (!disasterType || event.name.toLowerCase().includes(disasterType)) &&
+                       (!eventName || event.name.toLowerCase().includes(eventName)) &&
+                       (!eventId || event.eventId.includes(eventId)) &&
+                       (!status || event.statusValue === status);
+            });
+
+            displayEvents(filteredEvents);
+        }
+
+        // Event listeners for filtering
+        document.getElementById('search-btn').addEventListener('click', filterEvents);
+        document.getElementById('clear-filter-btn').addEventListener('click', () => {
+            document.getElementById('disaster-type').value = '';
+            document.getElementById('event-name').value = '';
+            document.getElementById('event-id').value = '';
+            document.getElementById('status').value = '';
+            displayEvents(events);
+        });
+        document.getElementById('display-all-btn').addEventListener('click', () => {
+            displayEvents(events);
+        });
+
+        // Initial display of events
+        displayEvents(events);
+    </script>
+</body>
+
+</html>
